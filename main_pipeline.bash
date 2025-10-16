@@ -9,7 +9,7 @@
 # ----------------------------------------------------------------------
 config_seq=$1
 archivo_muestras="$2"
-declare -A archivos
+declare -A arreglo_fastq
 
 
 ##Filtro de datos necesarios para acceder al script
@@ -62,17 +62,95 @@ seleccionar_tipo_metagenoma() {
 }
 
 verificar_datos() {
-   echo "$archivo_muestras"
-   while read -r ALIAS FILE_PATH; do
-        if [[ ! -z "$ALIAS" && ! -z "$FILE_PATH" ]]; then
-            FILES["$ALIAS"]="$FILE_PATH"
+    echo "$config_seq"
+    if [[ $config_seq == "SE" ]];then
+       # creador de la matriz de tratamiento y ubicación
+        while read -r condicion archivo_muestras; do
+        if [[ ! -z "$condicion" && ! -z "$archivo_muestras" ]]; then
+            arreglo_fastq["$condicion"]="$archivo_muestras"
+        else
+            echo "No se logró procesar el archivo de muestras"
+            echo "Favor de ingresar un archivo valido"
+            exit 1
         fi
-    done < <(awk 'NF{print $1 "\t" $2}' "$SAMPLE_MAPPING_FILE")
+        
+        done < <(awk 'NF{print $1 "\t" $2}' "$archivo_muestras")
 
+        echo "Se encontraron las siguientes muestras"
+        echo "${!arreglo_fastq[@]}"
+        echo "${arreglo_fastq[@]}"
+        ## Ciclo para revisar el tamaño de los archivos para validar su existencia y que no esten vacios
+        for condicion in "${!arreglo_fastq[@]}"; do
+            fastq_path="${arreglo_fastq[$condicion]}"
+             
+            echo -n "Revizando el archivo ${condicion} "  
+            if [[ -f $fastq_path  ]]; then 
+                size_b=$( du -b "$fastq_path" | awk '{print $1}')
+                echo "$size_b"
+                if [ "$size_b" -gt 0 ]; then  ## revisa si es diferente de 0
+                    size_human=$(numfmt --to=iec --suffix=B --format='%.2f' $size_b 2>/dev/null || echo "$size_b Bytes")
+                    echo "La condicion $condicion tuvo un tamaño de $size_human" 
+                else 
+                    echo "El archivo de la condición $condicion esta vacio"
+                    echo "Favor de revizar el archivo o la ruta"
+                fi               
+            else 
+                echo "Para la $condicion No se encuentra la dirección del siguiente archivo $fastq_path "  
+                echo "Corregir y volver a ingresar archivos"
+            fi
+        done
+
+    elif [[ $config_seq == "PE" ]];then 
+        DELIMITADOR="@"
+        ##creador de la matriz
+        while read -r condicion R1 R2 ; do
+            if [[ ! -z "$condicion" && ! -z "$R1" && ! -z "$R2" ]]; then #revisar que el archivo no esta vacio 
+                arreglo_fastq["$condicion"]="${R1}${DELIMITADOR}${R2}"
+            else 
+                echo "Error de formato, introducir de esta manera"    
+                echo "Identificador R1.fastq.gz R2.fastq.gz "
+                echo "Favor de ingresar un archivo valido"
+                exit 1
+            fi    
+
+        done < <(awk 'NF{print $1 "\t" $2 "\t" $3}' "$archivo_muestras")
+        for condicion in "${!arreglo_fastq[@]}"; do
+              R1_R2_PATHS="${arreglo_fastq[$condicion]}"
+              #echo "$R1_R2_PATHS"
+            IFS="${DELIMITADOR}" read -r path_R1 path_R2 <<< "$R1_R2_PATHS" 
+            #echo "$path_R1"
+            #echo "$path_R2"
+            if [[ -f "$path_R1" && -f "$path_R2" ]]; then
+                
+                R2_size_b=$( du -b "$path_R2" | awk '{print $1}')
+                R1_size_b=$( du -b "$path_R1" | awk '{print $1}')
+                #echo "$R1_size_b"
+                #echo "$R2_size_b"
+                if [[ "$R1_size_b" -gt 0  && "$R2_size_b" -gt 0  ]]; then  ## revisa si es diferente de 0
+                    R1size_human=$(numfmt --to=iec --suffix=B --format='%.2f' $R1_size_b 2>/dev/null || echo "$R1_size_b Bytes")
+                    R2size_human=$(numfmt --to=iec --suffix=B --format='%.2f' $R2_size_b 2>/dev/null || echo "$R2_size_b Bytes")
+                    echo "La condicion $condicion tuvo dos lecturasm, con los siguientes tamaños"
+                    echo "Lectura R1 $R1size_human"
+                    echo "lectura R2 $R2size_human" 
+
+                    echo "Continuando al menu de selección de metodología"
+                else 
+                    echo "Almenos uno de los archivos de la $condicion esta vacio"
+                    echo "Favor de revizar el archivo o la ruta"
+                fi               
+            else 
+                echo "Para la $condicion no se encuentra la ruta de almenos uno de los archivos "  
+                echo "Corregir y volver a ingresar archivos"
+            fi
+        done 
+
+
+
+    fi        
 }
 
 verificar_datos
-#seleccionar_tipo_metagenoma
+seleccionar_tipo_metagenoma
 
 ####### esqueleto principal 
 
