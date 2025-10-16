@@ -89,7 +89,8 @@ check_conda_envs() {
       
         if conda env list | grep -q -w "$ENV_NAME"; then
             echo "El ambiente '$ENV_NAME' existe. Activando..."
-            . $HOME/anaconda3/etc/profile.d/conda.sh activate "$ENV_NAME"
+            source $HOME/miniconda3/etc/profile.d/conda.sh
+            conda activate "$ENV_NAME"
             check_comando fastqc
             check_comando trim_galore
             check_comando metaspades
@@ -106,7 +107,8 @@ check_conda_envs() {
                     echo "Instalando ambiente $ENV_NAME..."
                     conda create --yes -n "$ENV_NAME" -c bioconda fastqc trim-galore spades megahit kaiju kraken
                     echo "Ambiente creado. Activando..."
-                    . $HOME/anaconda3/etc/profile.d/conda.sh activate "$ENV_NAME"
+                    source $HOME/miniconda3/etc/profile.d/conda.sh
+                    conda activate "$ENV_NAME"
                     check_comando fastqc
                     check_comando trim_galore
                     check_comando metaspades
@@ -126,7 +128,8 @@ check_conda_envs() {
         
         if conda env list | grep -q -w "$ENV_NAME"; then
             echo "El ambiente '$ENV_NAME' existe. Activando..."
-            . $HOME/anaconda3/etc/profile.d/conda.sh activate "$ENV_NAME"
+            source $HOME/miniconda3/etc/profile.d/conda.sh
+            conda activate "$ENV_NAME"
                     check_comando qiime
                     check_comando R
         else
@@ -138,7 +141,8 @@ check_conda_envs() {
                     wget -O qiime2.yml  https://raw.githubusercontent.com/qiime2/distributions/refs/heads/dev/2025.7/amplicon/released/qiime2-amplicon-ubuntu-latest-conda.yml
                     conda env create --yes -n $ENV_NAME prueba --file qiime2.yml
                     echo "Ambiente creado. Activando..."
-                    . $HOME/anaconda3/etc/profile.d/conda.sh activate "$ENV_NAME"
+                    source $HOME/miniconda3/etc/profile.d/conda.sh
+                    conda activate "$ENV_NAME"
                     check_comando qiime
                     check_comando R
                     rm  qiime2.yml
