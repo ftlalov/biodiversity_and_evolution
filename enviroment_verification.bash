@@ -124,30 +124,33 @@ check_conda_envs() {
 
     elif [[ "$ENV_NAME" == "biodiversity_and_evolution_qiime2" ]]; then
         
-      
         if conda env list | grep -q -w "$ENV_NAME"; then
             echo "El ambiente '$ENV_NAME' existe. Activando..."
-            conda activate "$ENV_NAME"
+            . $HOME/anaconda3/etc/profile.d/conda.sh activate "$ENV_NAME"
+                    check_comando qiime
+                    check_comando R
         else
             echo "El entorno '$ENV_NAME' no existe. Se requiere instalar QIIME2."
-           
-            exit 1 
+            read -r -p "¿Desea instalar el ambiente en conda? (S/N): " RESPUESTA
+            case "${RESPUESTA,,}" in
+                s*|y*)  
+                    echo "Instalando ambiente $ENV_NAME..."
+                    wget -O qiime2.yml  https://raw.githubusercontent.com/qiime2/distributions/refs/heads/dev/2025.7/amplicon/released/qiime2-amplicon-ubuntu-latest-conda.yml
+                    conda env create --yes -n $ENV_NAME prueba --file qiime2.yml
+                    echo "Ambiente creado. Activando..."
+                    . $HOME/anaconda3/etc/profile.d/conda.sh activate "$ENV_NAME"
+                    check_comando qiime
+                    check_comando R
+                    rm  qiime2.yml
+                ;;      
+                *)
+                    echo "No se ha iniciado la instalación, saliendo del programa."
+                    exit 1
+                ;;      
+            esac
         fi
 
-    elif [[ "$ENV_NAME" == "biodiversity_and_evolution_R" ]]; then
-        
-        
-        if conda env list | grep -q -w "$ENV_NAME"; then
-            echo "El ambiente '$ENV_NAME' existe. Activando..."
-            conda activate "$ENV_NAME"
-        else
-            echo "El entorno '$ENV_NAME' no existe. Se requiere instalar R."
-            exit 1 
-        fi
-    
-    else
-        echo "Error: El nombre de entorno '$ENV_NAME' no es válido para esta función." >&2
-        exit 1
+
     fi
 }
 
@@ -156,3 +159,5 @@ check_conda_envs() {
 check_comando wget
 check_conda
 check_conda_envs biodiversity_and_evolution_p1
+check_conda_envs biodiversity_and_evolution_qiime2
+
