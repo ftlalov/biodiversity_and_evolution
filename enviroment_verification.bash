@@ -16,6 +16,7 @@ export PATH="$HOME/anaconda1/bin:$PATH"
 export PATH="$HOME/anaconda2/bin:$PATH"
 export PATH="$HOME/anaconda3/bin:$PATH"
 
+
 # Funcion para ver si existe un comando
 check_comando() {
     if ! whereis "$1" >/dev/null 2>&1; then
@@ -77,8 +78,81 @@ install_anaconda() {
     esac      
 }
 
+# funcion para ver si existe el enviroment y su posterior activación y el 
+## chequeo del software necesario 
+
+check_conda_envs() {
+    local ENV_NAME="$1"
+
+    if [[ "$ENV_NAME" == "biodiversity_and_evolution_p1" ]]; then
+        
+      
+        if conda env list | grep -q -w "$ENV_NAME"; then
+            echo "El ambiente '$ENV_NAME' existe. Activando..."
+            . $HOME/anaconda3/etc/profile.d/conda.sh activate "$ENV_NAME"
+            check_comando fastqc
+            check_comando trim_galore
+            check_comando metaspades
+            check_comando megahit
+            check_comando kaiju
+            check_comando kraken
+            
+
+        else
+            echo "El entorno '$ENV_NAME' no existe."
+            read -r -p "¿Desea instalar el ambiente en conda? (S/N): " RESPUESTA
+            case "${RESPUESTA,,}" in
+                s*|y*)  
+                    echo "Instalando ambiente $ENV_NAME..."
+                    conda create --yes -n "$ENV_NAME" -c bioconda fastqc trim-galore spades megahit kaiju kraken
+                    echo "Ambiente creado. Activando..."
+                    . $HOME/anaconda3/etc/profile.d/conda.sh activate "$ENV_NAME"
+                    check_comando fastqc
+                    check_comando trim_galore
+                    check_comando metaspades
+                    check_comando megahit
+                    check_comando kaiju
+                    check_comando kraken
+
+                ;;      
+                *)
+                    echo "No se ha iniciado la instalación, saliendo del programa."
+                    exit 1
+                ;;      
+            esac
+        fi
+
+    elif [[ "$ENV_NAME" == "biodiversity_and_evolution_qiime2" ]]; then
+        
+      
+        if conda env list | grep -q -w "$ENV_NAME"; then
+            echo "El ambiente '$ENV_NAME' existe. Activando..."
+            conda activate "$ENV_NAME"
+        else
+            echo "El entorno '$ENV_NAME' no existe. Se requiere instalar QIIME2."
+           
+            exit 1 
+        fi
+
+    elif [[ "$ENV_NAME" == "biodiversity_and_evolution_R" ]]; then
+        
+        
+        if conda env list | grep -q -w "$ENV_NAME"; then
+            echo "El ambiente '$ENV_NAME' existe. Activando..."
+            conda activate "$ENV_NAME"
+        else
+            echo "El entorno '$ENV_NAME' no existe. Se requiere instalar R."
+            exit 1 
+        fi
+    
+    else
+        echo "Error: El nombre de entorno '$ENV_NAME' no es válido para esta función." >&2
+        exit 1
+    fi
+}
+
 ###### Verificar si wget está disponible
 
 check_comando wget
 check_conda
-
+check_conda_envs biodiversity_and_evolution_p1
