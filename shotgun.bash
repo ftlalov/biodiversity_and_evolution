@@ -274,6 +274,7 @@ asignar_tax_kaiju() {
         fi    
     fi
 }
+
 asignar_tax_kraken(){
         mode=$1
     if [[ $mode == "assembly" ]]; then
@@ -347,7 +348,7 @@ elif [[ $a -eq 2 ]]; then
 
             # asignar con kraken con contings
             asignar_tax_kraken assembly
-            echo "kaiju"
+            echo "kraken"
         elif [[ $c -eq 2 ]]; then
             #realizar asignación directamente con kraken con SE 
                 #asignar directamente de lecturas con kraken  
