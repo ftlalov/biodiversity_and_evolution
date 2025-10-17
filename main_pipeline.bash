@@ -161,13 +161,13 @@ if [[ $a -eq 1 ]]; then
 #        bash enviroment_verification.bash
         echo "se Ha completado la verificación"
         bash reads_preprocess.bash "$config_seq" "$archivo_muestras2"
-        bash 16s.bash
+        bash 16s.bash "$config_seq"
     elif [[ $a -eq 2 ]]; then 
         echo "Iniciando para metagenoma Shotgun"
 #        bash enviroment_verification.bash
         echo "se Ha completado la verificación"
         bash reads_preprocess.bash "$config_seq" "$archivo_muestras2"
-        bash shotgun.bash 
+        bash shotgun.bash "$config_seq"
 
     fi
 
