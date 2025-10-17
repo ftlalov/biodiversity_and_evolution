@@ -285,15 +285,21 @@ asignar_tax_kraken(){
             echo "Asignación con kraken Lecturas Pareadas"
             definir_array
             kraken2_db="database/kraken2"
+            touch temp/kraken_asig_report.txt
              for condicion in "${!arreglo_fastq[@]}"; do
                 R1_R2_PATHS="${arreglo_fastq[$condicion]}"
                 IFS="${DELIMITADOR}" read -r path_R1 path_R2 <<< "$R1_R2_PATHS" 
                 kraken2 --paired --threads 8 --db $kraken2_db --report temp/"$condicion"_report.txt --output temp/"$condicion"_kraken_out.txt   $path_R1 $path_R2 
                 assing_path="temp/${condicion}_kraken_out.txt"           
                 echo "${condicion},$(realpath "$assing_path")" >> temp/assignation_files.txt
-        
+                report_path="temp/${condicion}_report.txt "
+                echo "${condicion},$(realpath "$report_path")" >> temp/kraken_asig_report.txt
+                
             done 
-            
+            for i in "S" "F" "C" "K" ;do
+                Rscript kraken_report.R $i "all_samples_$i"
+            done
+
         fi    
     fi
 }
@@ -334,8 +340,11 @@ elif [[ $a -eq 2 ]]; then
                 ensamblar_metaspades
             elif [[ $d -eq 2 ]]; then
                 #ensamble con megahit
-                ensamblar_megahit      
+                #ensamblar_megahit 
+                echo ""
+
             fi
+
             # asignar con kraken con contings
             asignar_tax_kraken assembly
             echo "kaiju"
