@@ -105,7 +105,7 @@ check_conda_envs() {
             case "${RESPUESTA,,}" in
                 s*|y*)  
                     echo "Instalando ambiente $ENV_NAME..."
-                    conda create --yes -n "$ENV_NAME" -c bioconda fastqc trim-galore spades megahit kaiju kraken
+                    conda create --yes -n "$ENV_NAME" -c bioconda fastqc trim-galore spades megahit kaiju kraken2
                     echo "Ambiente creado. Activando..."
                     source $HOME/miniconda3/etc/profile.d/conda.sh
                     conda activate "$ENV_NAME"
@@ -114,7 +114,7 @@ check_conda_envs() {
                     check_comando metaspades
                     check_comando megahit
                     check_comando kaiju
-                    check_comando kraken
+                    check_comando kraken2
 
                 ;;      
                 *)
