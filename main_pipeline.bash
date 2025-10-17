@@ -9,6 +9,7 @@
 # ----------------------------------------------------------------------
 config_seq=$1
 archivo_muestras="$2"
+archivo_muestras2=$archivo_muestras
 declare -A arreglo_fastq
 
 
@@ -65,20 +66,21 @@ verificar_datos() {
     echo "$config_seq"
     if [[ $config_seq == "SE" ]];then
        # creador de la matriz de tratamiento y ubicación
-        while read -r condicion archivo_muestras; do
-        if [[ ! -z "$condicion" && ! -z "$archivo_muestras" ]]; then
-            arreglo_fastq["$condicion"]="$archivo_muestras"
-        else
-            echo "No se logró procesar el archivo de muestras"
-            echo "Favor de ingresar un archivo valido"
-            exit 1
-        fi
+            while read -r condicion r1; do
+            if [[ ! -z "$condicion" && ! -z "$r1" ]]; then
+                arreglo_fastq["$condicion"]=$r1
+            else
+                echo "No se logró procesar el archivo de muestras"
+                echo "Favor de ingresar un archivo valido"
+                exit 1
+            fi
         
         done < <(awk 'NF{print $1 "\t" $2}' "$archivo_muestras")
 
         echo "Se encontraron las siguientes muestras"
         echo "${!arreglo_fastq[@]}"
         echo "${arreglo_fastq[@]}"
+
         ## Ciclo para revisar el tamaño de los archivos para validar su existencia y que no esten vacios
         for condicion in "${!arreglo_fastq[@]}"; do
             fastq_path="${arreglo_fastq[$condicion]}"
@@ -156,14 +158,16 @@ seleccionar_tipo_metagenoma
 
 if [[ $a -eq 1 ]]; then 
         echo "Iniciando para metagenoma 16S/18S"
-        bash enviroment_verification.bash
+#        bash enviroment_verification.bash
         echo "se Ha completado la verificación"
-
+        bash reads_preprocess.bash "$config_seq" "$archivo_muestras2"
+        bash 16s.bash
     elif [[ $a -eq 2 ]]; then 
         echo "Iniciando para metagenoma Shotgun"
-        bash enviroment_verification.bash
+#        bash enviroment_verification.bash
         echo "se Ha completado la verificación"
-
+        bash reads_preprocess.bash "$config_seq" "$archivo_muestras2"
+        bash shotgun.bash 
 
     fi
 
